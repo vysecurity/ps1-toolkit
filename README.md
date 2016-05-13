@@ -6,29 +6,29 @@ This is a set of PowerShell scripts that are used by many penetration testers re
 
 PowerSploit
 ===========
-https://github.com/PowerShellMafia/PowerSploit/
+https://github.com/PowerShellMafia/PowerSploit/<br>
 
-Get-VaultCredential
-Invoke-GPPPassword
-Invoke-Mimikatz
-Invoke-NinjaCopy
-Invoke-ReflectivePEInjection
-Invoke-Shellcode
-Invoke-WmiCommand
-Persistence
-VolumeShadowCopyTools
+Get-VaultCredential<br>
+Invoke-GPPPassword<br>
+Invoke-Mimikatz<br>
+Invoke-NinjaCopy<br>
+Invoke-ReflectivePEInjection<br>
+Invoke-Shellcode<br>
+Invoke-WmiCommand<br>
+Persistence<br>
+VolumeShadowCopyTools<br>
 
 PowerTools
 ==========
 https://github.com/Veil-Framework/PowerTools
 
-PowerUp
-PowerView
+PowerUp<br>
+PowerView<br>
 
 Inveigh
 =======
 https://github.com/Kevin-Robertson/Inveigh
 
-Inveigh
-Inveigh-Relay
-Inveigh-BruteForce
+Inveigh<br>
+Inveigh-Relay<br>
+Inveigh-BruteForce<br>
