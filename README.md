@@ -3,6 +3,7 @@ PS-1 Toolkit
 
 This is a set of PowerShell scripts that are used by many penetration testers released by multiple leading professionals. This is simply a collection of scripts that are prepared and obfuscated to reduce level of detectability and to slow down incident response from understanding the actions performed by an attacker.
 
+I did not write any of these, I merely performed the obfuscation process on them. Refer to the respective repositories for updates, credit and documentation on usage.
 
 PowerSploit
 ===========
