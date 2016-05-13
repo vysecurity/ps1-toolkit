@@ -25,3 +25,10 @@ https://github.com/Veil-Framework/PowerTools
 PowerUp
 PowerView
 
+Inveigh
+=======
+https://github.com/Kevin-Robertson/Inveigh
+
+Inveigh
+Inveigh-Relay
+Inveigh-BruteForce
