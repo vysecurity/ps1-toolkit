@@ -5,6 +5,8 @@ This is a set of PowerShell scripts that are used by many penetration testers re
 
 I did not write any of these, I merely performed the obfuscation process on them. Refer to the respective repositories for updates, credit and documentation on usage.
 
+As we often hear the term "defense in depth" quite often, this could be thought of as "hide in depth" from an attackers perspective. It may not be quiet, but each step we add into the process to make it more difficult for IR, the better.
+
 PowerSploit
 ===========
 https://github.com/PowerShellMafia/PowerSploit/<br>
