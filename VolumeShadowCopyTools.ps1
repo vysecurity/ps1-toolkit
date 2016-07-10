@@ -1,5 +1,16 @@
 ﻿function Get-VolumeShadowCopy
 {
+<#
+.SYNOPSIS
+
+    Lists the device paths of all local volume shadow copies.
+
+    PowerSploit Function: Get-VolumeShadowCopy
+    Author: Matthew Graeber (@mattifestation)
+    License: BSD 3-Clause
+    Required Dependencies: None
+    Optional Dependencies: None
+#>
     ${83f9ee88d8954f24b68d6b55e6939fcf} = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent())
     if (-not ${83f9ee88d8954f24b68d6b55e6939fcf}.IsInRole([Security.Principal.WindowsBuiltInRole]$([Text.Encoding]::Unicode.GetString([Convert]::FromBase64String('QQBkAG0AaQBuAGkAcwB0AHIAYQB0AG8AcgA=')))))
     {

