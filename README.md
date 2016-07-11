@@ -7,6 +7,8 @@ This is a set of PowerShell scripts that are used by many penetration testers re
 
 As we often hear the term "defense in depth" quite often, this could be thought of as "hide in depth" from an attackers perspective. It may not be quiet, but each step we add into the process to make it more difficult for IR, the better.
 
+Obfuscator: http://www.powertheshell.com/isesteroids2-2/ordering-isesteroids/
+
 PowerSploit
 ===========
 https://github.com/PowerShellMafia/PowerSploit/<br>
